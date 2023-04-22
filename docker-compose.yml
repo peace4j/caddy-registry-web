@@ -1,0 +1,36 @@
+version: "3"
+services:
+  frontend:
+     container_name: apigate
+     image: docker.io/library/caddy:latest
+     volumes:
+        - /etc/localtime:/etc/localtime:ro
+        - ./caddy:/etc/caddy
+     ports:
+        - "80:80"
+        - "443:443"
+     networks:
+        - front
+
+  registry-web:
+    container_name: registry-web
+    image: hyper/docker-registry-web:latest
+    volumes:
+       - ./conf/registry-web:/conf:ro
+       - ./db:/data
+    networks:
+      - front
+    depends_on:
+       - registry
+
+  registry:
+    container_name: registry
+    image: registry:2.4.1
+    volumes:
+      - ./conf/registry:/etc/docker/registry:ro
+      - ./repo:/var/lib/registry     # 此处repo请使用你主机上真实的用于registry仓库目录
+    networks:
+      - front
+
+networks:
+  front:

@@ -1,0 +1,34 @@
+(logger) {
+    log {
+           output file /etc/caddy/access.log {
+           roll_size 1gb
+           roll_uncompressed
+         }
+    }
+}
+
+{
+ auto_https disable_redirects
+}
+
+your.domain {
+    request_body {
+        max_size 5GB
+    }
+    log {
+        output file /etc/caddy/access.log 
+    }
+    tls /etc/caddy/your.domain.fullchain.pem /etc/caddy/your.domain.privkey.pem
+    reverse_proxy /v2/* http://registry:5000 {
+        header_up Host {host}
+        header_up X-Real-IP {remote}
+        header_up X-Forwarded-For {remote}
+        header_up X-Forwarded-Proto {scheme}
+    }
+    reverse_proxy /* http://registry-web:8080 {
+        header_up Host {host}
+        header_up X-Real-IP {remote}
+        header_up X-Forwarded-For {remote}
+        header_up X-Forwarded-Proto {scheme}
+    }
+}
